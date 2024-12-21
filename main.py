@@ -1,48 +1,52 @@
 import sys 
 import pygame
-from constants import * 
-import player
+import constants
+from player import Player
 from asteroid import Asteroid
-import asteroidfield
-import shot 
+from asteroidfield import AsteroidField
+from shot import Shot 
+
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    screen = pygame.display.set_mode((constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT))
     game_clock = pygame.time.Clock()
-    dt = 0 
 
     updatable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
     asteroids = pygame.sprite.Group()
     shots = pygame.sprite.Group()
 
-    player.Player.containers = (updatable, drawable)
     Asteroid.containers = (asteroids, updatable, drawable)
-    asteroidfield.AsteroidField.containers = updatable
-    shot.Shot.containers = (updatable, drawable)
+    AsteroidField.containers = updatable
+    Shot.containers = (shots, updatable, drawable)
+    asteroid_field = AsteroidField()
 
-    asteroid_field = asteroidfield.AsteroidField()
-    player_1 = player.Player(x=SCREEN_WIDTH/2, y=SCREEN_HEIGHT/2)
+    Player.containers = (updatable, drawable)
+
+    player_1 = Player(constants.SCREEN_WIDTH/2, constants.SCREEN_HEIGHT/2)
+
+    dt = 0 
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
-        for i in updatable:
-            i.update(dt)
+            
+        for obj in updatable:
+            obj.update(dt)
 
-        for i in asteroids:
-            if i.collides_with(player_1):
+        for asteroid in asteroids:
+            if asteroid.collides_with(player_1):
                 print("Game over!")
                 sys.exit()
-            for s in shots:
-                if i.collides_with(s):
-                    i.kill()
-                    s.kill()
 
-        # create a black screen:
-        screen.fill((0,0,0))
+            for shot in shots:
+                if asteroid.collides_with(shot):
+                    shot.kill()
+                    asteroid.kill()
+
+        screen.fill("black")
 
         for i in drawable:
             i.draw(screen)
